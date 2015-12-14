@@ -1,0 +1,13 @@
+#
+# Add public-api source files here
+#
+
+public_api_src_files = \
+  $(public_api_src_dir)/compositor/compositor.cpp
+
+public_api_compositor_header_files = \
+  $(public_api_src_dir)/compositor/compositor.h
+
+public_api_header_files = \
+  $(public_api_src_dir)/pepper-dali.h
+
