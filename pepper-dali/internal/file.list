@@ -1,0 +1,13 @@
+# Add internal source files here
+
+internal_src_files = \
+  $(internal_src_dir)/compositor-impl.cpp \
+  $(internal_src_dir)/input.cpp \
+  $(internal_src_dir)/input-impl.cpp \
+  $(internal_src_dir)/object.cpp \
+  $(internal_src_dir)/object-impl.cpp \
+  $(internal_src_dir)/output.cpp \
+  $(internal_src_dir)/output-impl.cpp \
+  $(internal_src_dir)/shell.cpp \
+  $(internal_src_dir)/shell-impl.cpp
+
