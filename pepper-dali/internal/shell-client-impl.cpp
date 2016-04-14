@@ -302,22 +302,22 @@ void ShellClient::GetSurface( wl_client* client, unsigned int id, wl_resource* s
   DALI_LOG_INFO( gPepperShellClientLogging, Debug::Verbose, "ShellClient::GetSurface: success. surface = %p\n", mSurface );
 }
 
-void ShellClient::SetTitle( const std::string title )
+void ShellClient::SetTitle( const std::string& title )
 {
   mTitle = title;
 }
 
-std::string ShellClient::GetTitle() const
+const std::string& ShellClient::GetTitle() const
 {
   return mTitle;
 }
 
-void ShellClient::SetAppId( const std::string appId )
+void ShellClient::SetAppId( const std::string& appId )
 {
   mAppId = appId;
 }
 
-std::string ShellClient::GetAppId() const
+const std::string& ShellClient::GetAppId() const
 {
   return mAppId;
 }
@@ -338,7 +338,7 @@ void ShellClient::SurfaceResourceDestroy( struct wl_resource* resource )
     shellClient->mAppId.clear();
   }
 
-  if( !shellClient->mSurface )
+  if( shellClient->mSurface )
   {
     pepper_object_set_user_data( reinterpret_cast< pepper_object_t* >( shellClient->mSurface ), pepper_surface_get_role( shellClient->mSurface ), NULL, NULL );
   }

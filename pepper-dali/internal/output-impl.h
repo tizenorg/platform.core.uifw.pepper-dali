@@ -29,6 +29,9 @@
 #include <dali/public-api/signals/connection-tracker.h>
 #include <pepper-output-backend.h>
 
+// TODO: temp
+#include <dali/public-api/adaptor-framework/timer.h>
+
 namespace Dali
 {
 
@@ -87,6 +90,9 @@ private:
   void OnObjectViewAdded( Pepper::Object object, Pepper::ObjectView objectView );
   void OnObjectViewDeleted( Pepper::Object object, Pepper::ObjectView objectView );
 
+  // TODO: temp
+  bool OnRenderFinishTimerTick();
+
 private:
 
   // Undefined
@@ -110,6 +116,9 @@ private: // Data
   // Signals
   Pepper::Output::OutputSignalType mObjectViewAddedSignal;
   Pepper::Output::OutputSignalType mObjectViewDeletedSignal;
+
+  // TODO: temp
+  Timer mRenderFinishTimer;
 };
 
 } // namespace Internal

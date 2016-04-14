@@ -112,6 +112,7 @@ void Shell::OnClientDestroyed( Pepper::ShellClient shellClient )
     if( *iter == shellClient )
     {
       mShellClientList.erase( iter );
+      break;
     }
   }
 

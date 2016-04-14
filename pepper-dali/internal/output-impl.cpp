@@ -193,9 +193,18 @@ void Output::OnStartRepaintLoop( void* data )
 
 void Output::OnRepaint( void* data, const pepper_list_t* planeList )
 {
+  Output* output = static_cast< Output* >( data );
+
   DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::OnRepaint\n" );
 
   // TODO: repaint
+  if( !output->mRenderFinishTimer )
+  {
+    output->mRenderFinishTimer= Timer::New(10);
+    output->mRenderFinishTimer.TickSignal().Connect( output, &Output::OnRenderFinishTimerTick );
+  }
+
+  output->mRenderFinishTimer.Start();
 }
 
 void Output::OnAttachSurface( void* data, pepper_surface_t* surface, int* width, int* height )
@@ -278,8 +287,22 @@ void Output::OnObjectViewDeleted( Pepper::Object object, Pepper::ObjectView obje
     if( *iter == object )
     {
       mObjectList.erase( iter );
+      break;
     }
   }
+}
+
+// TODO: temp
+bool Output::OnRenderFinishTimerTick()
+{
+  struct timespec ts;
+
+  DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::OnRenderFinishTimerTick\n" );
+
+  pepper_compositor_get_time( static_cast< pepper_compositor_t* >( Pepper::GetImplementation( mCompositor ).GetCompositorHandle() ), &ts );
+  pepper_output_finish_frame( mOutput, &ts );
+
+  return false;
 }
 
 } // namespace Internal

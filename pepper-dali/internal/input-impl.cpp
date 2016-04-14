@@ -94,7 +94,7 @@ void Input::Initialize( Pepper::Compositor& compositor )
 
   /* create and add devices. */
   mDevice = pepper_input_device_create( static_cast< pepper_compositor_t* >( Pepper::GetImplementation( compositor ).GetCompositorHandle() ),
-                                        WL_SEAT_CAPABILITY_TOUCH, NULL, NULL );
+                                        WL_SEAT_CAPABILITY_KEYBOARD | WL_SEAT_CAPABILITY_TOUCH, NULL, NULL );
 //  mDevice = pepper_input_device_create( static_cast< pepper_compositor_t* >( Pepper::GetImplementation( compositor ).GetCompositorHandle() ),
 //                                        ( WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD | WL_SEAT_CAPABILITY_TOUCH ), NULL, NULL );
   if( !mDevice )

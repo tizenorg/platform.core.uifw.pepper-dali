@@ -53,11 +53,11 @@ public:
   pepper_view_t* GetView();
   void GetSurface( wl_client* client, unsigned int id, wl_resource* surfaceResource );
 
-  void SetTitle( const std::string title );
-  std::string GetTitle() const;
+  void SetTitle( const std::string& title );
+  const std::string& GetTitle() const;
 
-  void SetAppId( const std::string appId );
-  std::string GetAppId() const;
+  void SetAppId( const std::string& appId );
+  const std::string& GetAppId() const;
 
 private:
 
