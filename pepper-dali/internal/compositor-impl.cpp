@@ -121,24 +121,20 @@ void Compositor::Initialize( Application application, const std::string& name )
 
   mDisplay = pepper_compositor_get_display( mCompositor );
 
-#if 0
-  mTbmServer = wayland_tbm_server_init( mDisplay, NULL, -1, 0 );
-  if( !mTbmServer )
-  {
-    DALI_LOG_INFO( gPepperCompositorLogging, Debug::General, "Compositor::Initialize: wayland_tbm_server_init is failed.\n" );
-    pepper_compositor_destroy( mCompositor );
-    mCompositor = NULL;
-    return;
-  }
-#endif
-
   // create shell
   mShell = Pepper::Shell::New( Pepper::Compositor( this ) );
   if( !mShell )
   {
     DALI_LOG_INFO( gPepperCompositorLogging, Debug::General, "Compositor::Initialize: Fail to create shell.\n" );
-    wayland_tbm_server_deinit( mTbmServer );
-    mTbmServer = NULL;
+    pepper_compositor_destroy( mCompositor );
+    mCompositor = NULL;
+    return;
+  }
+
+  mTbmServer = wayland_tbm_server_init( mDisplay, NULL, -1, 0 );
+  if( !mTbmServer )
+  {
+    DALI_LOG_INFO( gPepperCompositorLogging, Debug::General, "Compositor::Initialize: wayland_tbm_server_init is failed.\n" );
     pepper_compositor_destroy( mCompositor );
     mCompositor = NULL;
     return;

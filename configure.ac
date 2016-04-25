@@ -17,6 +17,7 @@ PKG_CHECK_MODULES([PEPPER], [pepper xkbcommon])
 PKG_CHECK_MODULES([WAYLAND], [wayland-server xdg-shell-server tizen-extension-client])
 PKG_CHECK_MODULES([DALI], [dali-core dali-adaptor dali-toolkit])
 PKG_CHECK_MODULES([EFL], [ecore ecore-input ecore-wayland])
+PKG_CHECK_MODULES([WAYLAND_TBM], [wayland-tbm-server])
 
 AC_CONFIG_FILES([
 Makefile

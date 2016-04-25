@@ -103,8 +103,8 @@ bool Object::AttchBuffer( int* width, int* height )
 {
   pepper_buffer_t* buffer;
   wl_resource* bufferResource;
-  wl_shm_buffer* shmBuffer;
-  tbm_surface_h tbmSurface;
+  wl_shm_buffer* shmBuffer = NULL;
+  tbm_surface_h tbmSurface = NULL;
   int bufWidth, bufHeight;
 
   buffer = pepper_surface_get_buffer( mSurface );
@@ -127,27 +127,6 @@ bool Object::AttchBuffer( int* width, int* height )
 
   bufferResource = pepper_buffer_get_resource( buffer );
 
-  shmBuffer = wl_shm_buffer_get( bufferResource );
-  if( shmBuffer )
-  {
-    bufWidth = wl_shm_buffer_get_width( shmBuffer );
-    bufHeight = wl_shm_buffer_get_height( shmBuffer );
-  }
-  else
-  {
-    tbmSurface = wayland_tbm_server_get_surface( NULL, bufferResource );
-    if( tbmSurface )
-    {
-      bufWidth = tbm_surface_get_width( tbmSurface );
-      bufHeight = tbm_surface_get_height( tbmSurface );
-    }
-    else
-    {
-      DALI_LOG_INFO( gPepperObjectLogging, Debug::General, "Object::AttchBuffer: Failed to get buffer\n" );
-      return false;
-    }
-  }
-
   if( !mObjectView )
   {
     mObjectView = Pepper::ObjectView::New();
@@ -165,24 +144,47 @@ bool Object::AttchBuffer( int* width, int* height )
     mObjectViewAddedSignal.Emit( handle, mObjectView );
   }
 
-  if( shmBuffer != mShmBuffer )
+  shmBuffer = wl_shm_buffer_get( bufferResource );
+  if( shmBuffer )
   {
-    // create a new image
-    PixelBuffer* pixelBuffer = static_cast< PixelBuffer* >( wl_shm_buffer_get_data( shmBuffer ) );
-    mBufferImage = BufferImage::New( pixelBuffer, bufWidth, bufHeight );
+    bufWidth = wl_shm_buffer_get_width( shmBuffer );
+    bufHeight = wl_shm_buffer_get_height( shmBuffer );
 
-    mObjectView.SetImage( mBufferImage );
+    if( shmBuffer != mShmBuffer )
+    {
+      // create a new image
+      PixelBuffer* pixelBuffer = static_cast< PixelBuffer* >( wl_shm_buffer_get_data( shmBuffer ) );
+      mBufferImage = BufferImage::New( pixelBuffer, bufWidth, bufHeight );
 
-    mShmBuffer = shmBuffer;
+      mObjectView.SetImage( mBufferImage );
+
+      mShmBuffer = shmBuffer;
+    }
   }
-  else if ( tbmSurface != mTbmSurface )
+  else
   {
-    NativeImageSourcePtr nativeImageSource = NativeImageSource::New( tbmSurface );
-    mNativeImage = NativeImage::New( *nativeImageSource );
+    tbmSurface = wayland_tbm_server_get_surface( NULL, bufferResource );
+    if( tbmSurface )
+    {
+      bufWidth = tbm_surface_get_width( tbmSurface );
+      bufHeight = tbm_surface_get_height( tbmSurface );
 
-    mObjectView.SetImage( mNativeImage );
+      if ( tbmSurface != mTbmSurface )
+      {
+        // create a new image
+        NativeImageSourcePtr nativeImageSource = NativeImageSource::New( tbmSurface );
+        mNativeImage = NativeImage::New( *nativeImageSource );
 
-    mTbmSurface = tbmSurface;
+        mObjectView.SetImage( mNativeImage );
+
+        mTbmSurface = tbmSurface;
+      }
+    }
+    else
+    {
+      DALI_LOG_INFO( gPepperObjectLogging, Debug::General, "Object::AttchBuffer: Failed to get buffer\n" );
+      return false;
+    }
   }
 
   if( ( mWidth != bufWidth ) || ( mHeight != bufHeight ) )
@@ -272,6 +274,7 @@ void Object::OnDestroySurface( pepper_event_listener_t* listener, pepper_object_
   object->mObjectViewDeletedSignal.Emit( handle, object->mObjectView );
 
   object->mSurface = NULL;
+  object->mTbmSurface = NULL;
 
   if( object->mSurfaceDestroyListener )
   {
@@ -289,6 +292,7 @@ void Object::OnDestroyBuffer( pepper_event_listener_t* listener, pepper_object_t
     pepper_event_listener_remove( object->mBufferDestroyListener );
   }
 
+#if 0
   if( object->mShmBuffer )
   {
     void* shmData = wl_shm_buffer_get_data( object->mShmBuffer );
@@ -305,6 +309,7 @@ void Object::OnDestroyBuffer( pepper_event_listener_t* listener, pepper_object_t
   else if( object->mTbmSurface )
   {
   }
+#endif
 }
 
 } // namespace Internal
