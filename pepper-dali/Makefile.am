@@ -21,8 +21,7 @@ libpepper_dali_la_CXXFLAGS = \
     @WAYLAND_CFLAGS@ \
     @PEPPER_CFLAGS@ \
 	@WAYLAND_TBM_LIBS@ \
-    $(pepper_dali_includes) \
-    -DDEBUG_ENABLED
+    $(pepper_dali_includes)
 
 libpepper_dali_la_SOURCES = $(src_files)
 
