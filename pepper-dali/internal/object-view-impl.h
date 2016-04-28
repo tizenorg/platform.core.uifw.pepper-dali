@@ -66,9 +66,19 @@ public:
   std::string GetAppId() const;
 
   /**
+   * @copydoc Dali::Pepper::ObjectView::CancelTouchEvent
+   */
+  bool CancelTouchEvent();
+
+  /**
    * Set pepper surface
    */
   void SetSurface( pepper_surface_t* surface );
+
+  /**
+   * Set pepper input modules
+   */
+  void SetInput( pepper_pointer_t* pointer, pepper_keyboard_t* keyboard, pepper_touch_t* touch );
 
 protected:
 
@@ -81,6 +91,13 @@ protected:
    * A reference counted object may only be deleted by calling Unreference()
    */
   virtual ~ObjectView();
+
+protected: // From CustomActorImpl
+
+  /**
+   * @copydoc Dali::CustomActorImpl::OnTouchEvent( const TouchEvent& event )
+   */
+  virtual bool OnTouchEvent( const TouchEvent& event );
 
 private: // From Control
 
@@ -105,7 +122,12 @@ private:
   int mWidth;
   int mHeight;
 
+  bool mTouchDown;
+
   pepper_surface_t* mSurface;
+  pepper_pointer_t* mPointer;
+  pepper_keyboard_t* mKeyboard;
+  pepper_touch_t* mTouch;
 };
 
 } // namespace Internal

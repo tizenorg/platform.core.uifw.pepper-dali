@@ -79,6 +79,11 @@ std::string ObjectView::GetAppId() const
   return Dali::Pepper::GetImplementation( *this ).GetAppId();
 }
 
+bool ObjectView::CancelTouchEvent()
+{
+  return Dali::Pepper::GetImplementation( *this ).CancelTouchEvent();
+}
+
 ObjectView::ObjectView( Internal::ObjectView& implementation )
 : Control( implementation )
 {

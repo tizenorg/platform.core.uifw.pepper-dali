@@ -131,6 +131,14 @@ public:
    */
   std::string GetAppId() const;
 
+  /**
+   * @brief Cancels touch event procedure.
+   *
+   * @since_tizen 3.0
+   * @return true on success, false otherwise.
+   */
+  bool CancelTouchEvent();
+
 public: // Not intended for application developers
 
   /**

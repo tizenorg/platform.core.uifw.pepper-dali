@@ -22,6 +22,7 @@
 #include <pepper-dali/internal/shell-client-impl.h>
 
 // EXTERNAL INCLUDES
+#include <dali/public-api/events/touch-event.h>
 #include <dali/integration-api/debug.h>
 
 namespace Dali
@@ -61,7 +62,11 @@ ObjectView::ObjectView()
 : Control( ControlBehaviour( REQUIRES_TOUCH_EVENTS ) ),
   mWidth( 0 ),
   mHeight( 0 ),
-  mSurface( NULL )
+  mTouchDown( false ),
+  mSurface( NULL ),
+  mPointer( NULL ),
+  mKeyboard( NULL ),
+  mTouch( NULL )
 {
 }
 
@@ -131,9 +136,94 @@ std::string ObjectView::GetAppId() const
   return appId;
 }
 
+bool ObjectView::CancelTouchEvent()
+{
+  if( !mTouchDown )
+  {
+    return false;
+  }
+
+  Pepper::Internal::ShellClientPtr shellClient = reinterpret_cast< Pepper::Internal::ShellClient* >( pepper_object_get_user_data( reinterpret_cast< pepper_object_t* >( mSurface ), pepper_surface_get_role( mSurface ) ) );
+  if( !shellClient )
+  {
+    DALI_LOG_INFO( gPepperObjectViewLogging, Debug::General, "ObjectView::CancelTouchEvent: shellClient is null. mSurface = %p\n", mSurface );
+    return false;
+  }
+
+  pepper_touch_send_cancel( mTouch, shellClient->GetView() );
+  pepper_touch_remove_point( mTouch, 0 );
+
+  mTouchDown = false;
+
+  return true;
+}
+
 void ObjectView::SetSurface( pepper_surface_t* surface )
 {
   mSurface = surface;
+}
+
+void ObjectView::SetInput( pepper_pointer_t* pointer, pepper_keyboard_t* keyboard, pepper_touch_t* touch )
+{
+  mPointer = pointer;
+  mKeyboard = keyboard;
+  mTouch = touch;
+}
+
+bool ObjectView::OnTouchEvent( const TouchEvent& touchEvent )
+{
+  if( 1 == touchEvent.GetPointCount() )
+  {
+    const TouchPoint& point = touchEvent.GetPoint(0);
+
+    Pepper::Internal::ShellClientPtr shellClient = reinterpret_cast< Pepper::Internal::ShellClient* >( pepper_object_get_user_data( reinterpret_cast< pepper_object_t* >( mSurface ), pepper_surface_get_role( mSurface ) ) );
+    if( !shellClient )
+    {
+      DALI_LOG_INFO( gPepperObjectViewLogging, Debug::General, "ObjectView::OnTouchEvent: shellClient is null. mSurface = %p\n", mSurface );
+      return false;
+    }
+
+    switch( point.state )
+    {
+      case TouchPoint::Down:
+      {
+        mTouchDown = true;
+
+        pepper_touch_add_point( mTouch, point.deviceId, point.local.x, point.local.y );
+        pepper_touch_send_down( mTouch, shellClient->GetView(), touchEvent.time, point.deviceId, point.local.x, point.local.y );
+
+        DALI_LOG_INFO( gPepperObjectViewLogging, Debug::Verbose, "ObjectView::OnTouchEvent: Touch Down (%.2f, %.2f) device = %d surface = %p\n", point.local.x, point.local.y, point.deviceId, mSurface );
+        return true;
+      }
+      case TouchPoint::Up:
+      {
+        if( mTouchDown )
+        {
+          mTouchDown = false;
+
+          pepper_touch_send_up( mTouch, shellClient->GetView(), touchEvent.time, point.deviceId );
+          pepper_touch_remove_point( mTouch, point.deviceId );
+
+          DALI_LOG_INFO( gPepperObjectViewLogging, Debug::Verbose, "ObjectView::OnTouchEvent: Touch Up (%.2f, %.2f) surface = %p\n", point.local.x, point.local.y, mSurface );
+          return true;
+        }
+        break;
+      }
+      case TouchPoint::Motion:
+      {
+        pepper_touch_send_motion( mTouch, shellClient->GetView(), touchEvent.time, point.deviceId, point.local.x, point.local.y );
+
+//        DALI_LOG_INFO( gPepperObjectViewLogging, Debug::Verbose, "ObjectView::OnTouchEvent: Touch Motion (%.2f, %.2f)\n", point.local.x, point.local.y );
+        return true;
+      }
+      default:
+      {
+        return false;
+      }
+    }
+  }
+
+  return false;
 }
 
 void ObjectView::OnInitialize()

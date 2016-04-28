@@ -131,10 +131,9 @@ bool Object::AttchBuffer( int* width, int* height )
   {
     mObjectView = Pepper::ObjectView::New();
 
-    mObjectView.TouchedSignal().Connect( this, &Object::OnTouched );
-
-    // Set surface
+    // Set surface and input modules
     Pepper::GetImplementation( mObjectView ).SetSurface( mSurface );
+    Pepper::GetImplementation( mObjectView ).SetInput( mPointer, mKeyboard, mTouch );
 
     // TODO: support multi touch, focus in/out, mouse in/out
 
@@ -219,51 +218,6 @@ Pepper::Object::ObjectSignalType& Object::ObjectViewAddedSignal()
 Pepper::Object::ObjectSignalType& Object::ObjectViewDeletedSignal()
 {
   return mObjectViewDeletedSignal;
-}
-
-bool Object::OnTouched( Actor actor, const TouchEvent& touchEvent )
-{
-  const TouchPoint& point = touchEvent.GetPoint(0);
-
-  Pepper::Internal::ShellClientPtr shellClient = reinterpret_cast< Pepper::Internal::ShellClient* >( pepper_object_get_user_data( reinterpret_cast< pepper_object_t* >( mSurface ), pepper_surface_get_role( mSurface ) ) );
-  if( !shellClient )
-  {
-    DALI_LOG_INFO( gPepperObjectLogging, Debug::General, "Object::OnTouched: shellClient is null. mSurface = %p\n", mSurface );
-    return false;
-  }
-
-  switch( point.state )
-  {
-    case TouchPoint::Down:
-    {
-      pepper_touch_add_point( mTouch, point.deviceId, point.local.x, point.local.y );
-      pepper_touch_send_down( mTouch, shellClient->GetView(), touchEvent.time, point.deviceId, point.local.x, point.local.y );
-
-      DALI_LOG_INFO( gPepperObjectLogging, Debug::Verbose, "Object::OnTouched: Touch Down (%.2f, %.2f) device = %d surface = %p\n", point.local.x, point.local.y, point.deviceId, mSurface );
-      return true;
-    }
-    case TouchPoint::Up:
-    {
-      pepper_touch_send_up( mTouch, shellClient->GetView(), touchEvent.time, point.deviceId );
-      pepper_touch_remove_point( mTouch, point.deviceId );
-
-      DALI_LOG_INFO( gPepperObjectLogging, Debug::Verbose, "Object::OnTouched: Touch Up (%.2f, %.2f) surface = %p\n", point.local.x, point.local.y, mSurface );
-      return true;
-    }
-    case TouchPoint::Motion:
-    {
-      pepper_touch_send_motion( mTouch, shellClient->GetView(), touchEvent.time, point.deviceId, point.local.x, point.local.y );
-
-//      DALI_LOG_INFO( gPepperObjectLogging, Debug::Verbose, "Object::OnTouched: Touch Motion (%.2f, %.2f)\n", point.local.x, point.local.y );
-      return true;
-    }
-    default:
-    {
-      return false;
-    }
-  }
-
-  return false;
 }
 
 void Object::OnDestroySurface( pepper_event_listener_t* listener, pepper_object_t* pepperObject, uint32_t id, void* info, void* data )
