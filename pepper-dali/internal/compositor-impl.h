@@ -52,6 +52,11 @@ public:
    */
   static CompositorPtr New( Application application, const std::string& name );
 
+  /**
+   * @copydoc Dali::Pepper::Compositor::GetName()
+   */
+  const std::string& GetName() const;
+
   void* GetCompositorHandle();
 
 public: //Signals

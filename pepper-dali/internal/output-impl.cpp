@@ -22,6 +22,8 @@
 #include <pepper-dali/internal/compositor-impl.h>
 
 // EXTERNAL INCLUDES
+#include <dali/integration-api/adaptors/adaptor.h>
+#include <dali/devel-api/adaptor-framework/render-surface.h>
 #include <dali/integration-api/debug.h>
 
 namespace Dali
@@ -74,7 +76,8 @@ OutputPtr Output::New( Pepper::Compositor compositor, Application application, P
 Output::Output()
 : mSize(),
   mOutput( NULL ),
-  mPrimaryPlane( NULL )
+  mPrimaryPlane( NULL ),
+  mRepaintRequest( false )
 {
 }
 
@@ -87,9 +90,11 @@ void Output::Initialize( Pepper::Compositor& compositor, Application application
   mCompositor = compositor;
   mInput = input;
 
-  // TODO: use application info
-  mSize.width = 720.0f;
-  mSize.height = 1280.0f;
+  RenderSurface& surface = Adaptor::Get().GetSurface();
+  PositionSize positionSize = surface.GetPositionSize();
+
+  mSize.width = positionSize.width;
+  mSize.height = positionSize.height;
 
   mOutput = pepper_compositor_add_output( static_cast< pepper_compositor_t* >( Pepper::GetImplementation( compositor ).GetCompositorHandle() ), &outputInterface, "dali", this, WL_OUTPUT_TRANSFORM_NORMAL, 1 );
   if( !mOutput )
@@ -108,9 +113,10 @@ void Output::Initialize( Pepper::Compositor& compositor, Application application
 
   application.ResizeSignal().Connect( this, &Output::OnResize );
 
-  // TODO: render post?
+  // Set the thread-synchronization interface on the render-surface
+  surface.SetThreadSynchronization( *this );
 
-  DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::Initialize: success\n" );
+  DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::Initialize: success [width = %.2f height = %.2f]\n", mSize.width, mSize.height );
 }
 
 void Output::OnDestroy( void* data )
@@ -197,10 +203,12 @@ void Output::OnRepaint( void* data, const pepper_list_t* planeList )
 
   DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::OnRepaint\n" );
 
-  // TODO: repaint
+  output->mRepaintRequest = true;
+
+  // TODO: temp
   if( !output->mRenderFinishTimer )
   {
-    output->mRenderFinishTimer= Timer::New(10);
+    output->mRenderFinishTimer= Timer::New(1);
     output->mRenderFinishTimer.TickSignal().Connect( output, &Output::OnRenderFinishTimerTick );
   }
 
@@ -263,10 +271,11 @@ Pepper::Output::OutputSignalType& Output::ObjectViewDeletedSignal()
 
 void Output::OnResize( Application& application )
 {
-  // TODO
-  // Can't get a new size! Use a new size later
-  mSize.width = 720.0f;
-  mSize.height = 1280.0f;
+  RenderSurface& surface = Adaptor::Get().GetSurface();
+  PositionSize positionSize = surface.GetPositionSize();
+
+  mSize.width = positionSize.width;
+  mSize.height = positionSize.height;
 
   pepper_output_update_mode( mOutput );
 }
@@ -290,6 +299,31 @@ void Output::OnObjectViewDeleted( Pepper::Object object, Pepper::ObjectView obje
       break;
     }
   }
+}
+
+void Output::PostRenderComplete()
+{
+  if( mRepaintRequest )
+  {
+    struct timespec ts;
+
+    DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::PostRenderComplete" );
+
+    pepper_compositor_get_time( static_cast< pepper_compositor_t* >( Pepper::GetImplementation( mCompositor ).GetCompositorHandle() ), &ts );
+    pepper_output_finish_frame( mOutput, &ts );
+
+    mRepaintRequest = false;
+  }
+}
+
+void Output::PostRenderStarted()
+{
+  // Do nothing
+}
+
+void Output::PostRenderWaitForCompletion()
+{
+  // Do nothing
 }
 
 // TODO: temp

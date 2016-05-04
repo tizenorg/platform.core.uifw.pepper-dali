@@ -92,19 +92,24 @@ protected:
    */
   virtual ~ObjectView();
 
-protected: // From CustomActorImpl
-
-  /**
-   * @copydoc Dali::CustomActorImpl::OnTouchEvent( const TouchEvent& event )
-   */
-  virtual bool OnTouchEvent( const TouchEvent& event );
-
 private: // From Control
 
   /**
    * @copydoc Dali::Toolkit::Control::OnInitialize()
    */
   virtual void OnInitialize();
+
+private: // From CustomActorImpl
+
+  /**
+   * @copydoc Dali::CustomActorImpl::OnTouchEvent( const TouchEvent& event )
+   */
+  virtual bool OnTouchEvent( const TouchEvent& event );
+
+  /**
+   * @copydoc CustomActorImpl::OnSizeSet( const Vector3& targetSize )
+   */
+  virtual void OnSizeSet( const Vector3& targetSize );
 
 private:
 
@@ -113,6 +118,8 @@ private:
 
   // Undefined
   ObjectView& operator= ( const ObjectView& );
+
+  static void OnConfigureCallback( void* data, int width, int height );
 
 private:
 

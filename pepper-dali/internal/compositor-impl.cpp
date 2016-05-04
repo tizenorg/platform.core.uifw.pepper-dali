@@ -96,6 +96,11 @@ Compositor::~Compositor()
   }
 }
 
+const std::string& Compositor::GetName() const
+{
+  return mSocketName;
+}
+
 void* Compositor::GetCompositorHandle()
 {
   return static_cast< void* >( mCompositor );
@@ -181,9 +186,6 @@ void Compositor::Initialize( Application application, const std::string& name )
   mOutput.ObjectViewDeletedSignal().Connect( this, &Compositor::OnObjectViewDeleted );
 
   DALI_LOG_INFO( gPepperCompositorLogging, Debug::Verbose, "Compositor::Initialize: success. socket name = %s\n", mSocketName.c_str() );
-
-  // TODO: temp
-  setenv("WAYLAND_DISPLAY", mSocketName.c_str(), 1);
 }
 
 int Compositor::GetSocketFdFromServer()

@@ -27,6 +27,7 @@
 #include <dali/public-api/common/vector-wrapper.h>
 #include <dali/public-api/object/base-object.h>
 #include <dali/public-api/signals/connection-tracker.h>
+#include <dali/integration-api/adaptors/thread-synchronization-interface.h>
 #include <pepper-output-backend.h>
 
 // TODO: temp
@@ -44,7 +45,7 @@ namespace Internal
 class Output;
 typedef IntrusivePtr<Output> OutputPtr;
 
-class Output : public BaseObject, public ConnectionTracker
+class Output : public BaseObject, public ConnectionTracker, public ThreadSynchronizationInterface
 {
 public:
 
@@ -90,6 +91,31 @@ private:
   void OnObjectViewAdded( Pepper::Object object, Pepper::ObjectView objectView );
   void OnObjectViewDeleted( Pepper::Object object, Pepper::ObjectView objectView );
 
+private: // From ThreadSynchronizationInterface
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Called by the Event Thread if post-rendering is required
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @copydoc ThreadSynchronizationInterface::PostRenderComplete()
+   */
+  virtual void PostRenderComplete();
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  //// Called by the Render Thread if post-rendering is required
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @copydoc ThreadSynchronizationInterface::PostRenderStarted()
+   */
+  virtual void PostRenderStarted();
+
+  /**
+   * @copydoc ThreadSynchronizationInterface::PostRenderStarted()
+   */
+  virtual void PostRenderWaitForCompletion();
+
   // TODO: temp
   bool OnRenderFinishTimerTick();
 
@@ -116,6 +142,8 @@ private: // Data
   // Signals
   Pepper::Output::OutputSignalType mObjectViewAddedSignal;
   Pepper::Output::OutputSignalType mObjectViewDeletedSignal;
+
+  bool mRepaintRequest;
 
   // TODO: temp
   Timer mRenderFinishTimer;

@@ -125,8 +125,6 @@ bool Object::AttchBuffer( int* width, int* height )
   mBuffer = buffer;
   mBufferDestroyListener = pepper_object_add_event_listener( (pepper_object_t*)buffer, PEPPER_EVENT_OBJECT_DESTROY, 0, Object::OnDestroyBuffer, this );
 
-  bufferResource = pepper_buffer_get_resource( buffer );
-
   if( !mObjectView )
   {
     mObjectView = Pepper::ObjectView::New();
@@ -135,13 +133,11 @@ bool Object::AttchBuffer( int* width, int* height )
     Pepper::GetImplementation( mObjectView ).SetSurface( mSurface );
     Pepper::GetImplementation( mObjectView ).SetInput( mPointer, mKeyboard, mTouch );
 
-    // TODO: support multi touch, focus in/out, mouse in/out
-
-    // TODO: resize callback
-
     Pepper::Object handle( this );
     mObjectViewAddedSignal.Emit( handle, mObjectView );
   }
+
+  bufferResource = pepper_buffer_get_resource( buffer );
 
   shmBuffer = wl_shm_buffer_get( bufferResource );
   if( shmBuffer )

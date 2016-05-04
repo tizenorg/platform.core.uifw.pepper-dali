@@ -34,6 +34,11 @@ Compositor Compositor::New( Application application, const std::string& name )
   return Compositor( internal.Get() );
 }
 
+const std::string& Compositor::GetName() const
+{
+  return GetImplementation( *this ).GetName();
+}
+
 Compositor Compositor::DownCast( BaseHandle handle )
 {
   return Compositor( dynamic_cast< Internal::Compositor* >( handle.GetObjectPtr() ) );

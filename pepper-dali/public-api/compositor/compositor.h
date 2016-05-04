@@ -65,6 +65,14 @@ public:
   static Compositor New( Application application, const std::string& name );
 
   /**
+   * @brief Gets the name of the compositor.
+   *
+   * @since_tizen 3.0
+   * @return compositor name.
+   */
+  const std::string& GetName() const;
+
+  /**
    * @brief Downcast a handle to Compositor handle.
    *
    * If the BaseHandle points is a Compositor the downcast returns a valid handle.

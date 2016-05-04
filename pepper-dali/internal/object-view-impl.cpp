@@ -170,6 +170,18 @@ void ObjectView::SetInput( pepper_pointer_t* pointer, pepper_keyboard_t* keyboar
   mTouch = touch;
 }
 
+void ObjectView::OnInitialize()
+{
+  mImageView = Toolkit::ImageView::New();
+  mImageView.SetParentOrigin( ParentOrigin::CENTER );
+  mImageView.SetAnchorPoint( AnchorPoint::CENTER );
+
+  Self().Add( mImageView );
+  Self().SetResizePolicy( ResizePolicy::FIT_TO_CHILDREN, Dimension::ALL_DIMENSIONS );
+
+  // TODO: support multi touch, focus in/out, mouse in/out
+}
+
 bool ObjectView::OnTouchEvent( const TouchEvent& touchEvent )
 {
   if( 1 == touchEvent.GetPointCount() )
@@ -226,14 +238,27 @@ bool ObjectView::OnTouchEvent( const TouchEvent& touchEvent )
   return false;
 }
 
-void ObjectView::OnInitialize()
+void ObjectView::OnSizeSet( const Vector3& targetSize )
 {
-  mImageView = Toolkit::ImageView::New();
-  mImageView.SetParentOrigin( ParentOrigin::CENTER );
-  mImageView.SetAnchorPoint( AnchorPoint::CENTER );
+  if( mSurface )
+  {
+    Pepper::Internal::ShellClientPtr shellClient = reinterpret_cast< Pepper::Internal::ShellClient* >( pepper_object_get_user_data( reinterpret_cast< pepper_object_t* >( mSurface ), pepper_surface_get_role( mSurface ) ) );
+    if( shellClient )
+    {
+      shellClient->Configure( static_cast< int >( targetSize.width ), static_cast< int >( targetSize.height ), ObjectView::OnConfigureCallback, this );
+    }
+  }
 
-  Self().Add( mImageView );
-  Self().SetResizePolicy( ResizePolicy::FIT_TO_CHILDREN, Dimension::ALL_DIMENSIONS );
+  DALI_LOG_INFO( gPepperObjectViewLogging, Debug::Verbose, "ObjectView::OnSizeSet:width = %.2f height = %.2f\n", targetSize.width, targetSize.height );
+}
+
+void ObjectView::OnConfigureCallback( void* data, int width, int height )
+{
+  ObjectView* objectView = static_cast< ObjectView* >( data );
+
+  objectView->mImageView.SetSize( static_cast< float >( width ), static_cast< float >( height ) );
+
+  DALI_LOG_INFO( gPepperObjectViewLogging, Debug::Verbose, "ObjectView::OnConfigureCallback:width = %d height = %d\n", width, height );
 }
 
 } // namespace Internal
