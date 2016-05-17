@@ -84,6 +84,16 @@ bool ObjectView::CancelTouchEvent()
   return Dali::Pepper::GetImplementation( *this ).CancelTouchEvent();
 }
 
+void ObjectView::Show()
+{
+  Dali::Pepper::GetImplementation( *this ).Show();
+}
+
+void ObjectView::Hide()
+{
+  Dali::Pepper::GetImplementation( *this ).Hide();
+}
+
 ObjectView::ObjectView( Internal::ObjectView& implementation )
 : Control( implementation )
 {

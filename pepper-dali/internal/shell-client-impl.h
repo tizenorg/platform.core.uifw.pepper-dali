@@ -59,6 +59,9 @@ public:
   void SetAppId( const std::string& appId );
   const std::string& GetAppId() const;
 
+  void MapSurface();
+  void UnmapSurface();
+
 private:
 
   /**
@@ -104,7 +107,7 @@ private: // Data
   std::string mTitle;
   std::string mAppId;
 
-  bool mSurfaceMapped;
+  bool mNeedSurfaceMap;
   bool mAckConfigure;
 
   ConfigureCallback mConfigureCallback;

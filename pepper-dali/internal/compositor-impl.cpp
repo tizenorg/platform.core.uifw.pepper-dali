@@ -21,6 +21,7 @@
 // EXTERNAL INCLUDES
 #include <dali/integration-api/debug.h>
 #include <wayland-server.h>
+#include <wayland-tbm-server.h>
 #include <tizen-extension-client-protocol.h>
 #include <Ecore_Wayland.h>
 

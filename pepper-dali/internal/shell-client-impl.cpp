@@ -178,7 +178,7 @@ ShellClient::ShellClient()
   mSurfaceCommitListener( NULL ),
   mTitle(),
   mAppId(),
-  mSurfaceMapped( false ),
+  mNeedSurfaceMap( false ),
   mAckConfigure( false ),
   mConfigureCallback( NULL ),
   mConfigureCallbackData( NULL ),
@@ -293,7 +293,7 @@ void ShellClient::GetSurface( wl_client* client, unsigned int id, wl_resource* s
 
   mSurfaceCommitListener = pepper_object_add_event_listener( reinterpret_cast< pepper_object_t* >( mSurface ), PEPPER_EVENT_SURFACE_COMMIT, 0, ShellClient::OnSurfaceCommit, this );
 
-  mSurfaceMapped = false;
+  mNeedSurfaceMap = true;
 
   pepper_surface_set_role( mSurface, "xdg_surface" );
 
@@ -320,6 +320,28 @@ void ShellClient::SetAppId( const std::string& appId )
 const std::string& ShellClient::GetAppId() const
 {
   return mAppId;
+}
+
+void ShellClient::MapSurface()
+{
+  if( !mNeedSurfaceMap )
+  {
+    pepper_view_map( mView );
+    mNeedSurfaceMap = true;
+
+    DALI_LOG_INFO( gPepperShellClientLogging, Debug::Verbose, "ShellClient::MapSurface: view is mapped.\n" );
+  }
+}
+
+void ShellClient::UnmapSurface()
+{
+  if( mNeedSurfaceMap )
+  {
+    pepper_view_unmap( mView );
+    mNeedSurfaceMap = false;
+
+    DALI_LOG_INFO( gPepperShellClientLogging, Debug::Verbose, "ShellClient::UnmapSurface: view is unmapped.\n" );
+  }
 }
 
 void ShellClient::SurfaceResourceDestroy( struct wl_resource* resource )
@@ -361,11 +383,11 @@ void ShellClient::OnSurfaceCommit( pepper_event_listener_t* listener, pepper_obj
 {
   ShellClient* shellClient = static_cast< ShellClient* >( data );
 
-  if( !shellClient->mSurfaceMapped )
+  if( shellClient->mNeedSurfaceMap && !pepper_view_is_mapped( shellClient->mView ) )
   {
     pepper_view_map( shellClient->mView );
 
-    shellClient->mSurfaceMapped = true;
+    DALI_LOG_INFO( gPepperShellClientLogging, Debug::Verbose, "ShellClient::OnSurfaceCommit: view is mapped.\n" );
   }
 }
 

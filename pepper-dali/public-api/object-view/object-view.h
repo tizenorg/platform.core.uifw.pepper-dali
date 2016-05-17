@@ -139,6 +139,20 @@ public:
    */
   bool CancelTouchEvent();
 
+  /**
+   * @brief Shows the ObjectView
+   *
+   * @since_tizen 3.0
+   */
+  void Show();
+
+  /**
+   * @brief Hides the ObjectView
+   *
+   * @since_tizen 3.0
+   */
+  void Hide();
+
 public: // Not intended for application developers
 
   /**

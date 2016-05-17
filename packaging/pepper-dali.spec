@@ -9,6 +9,7 @@ Source:     %{name}-%{version}.tar.xz
 
 BuildRequires: pkgconfig(dali-core)
 BuildRequires: pkgconfig(dali-adaptor)
+BuildRequires: pkgconfig(dali-adaptor-integration)
 BuildRequires: pkgconfig(dali-toolkit)
 BuildRequires: pkgconfig(wayland-server)
 BuildRequires: pkgconfig(pepper)

@@ -158,6 +158,34 @@ bool ObjectView::CancelTouchEvent()
   return true;
 }
 
+void ObjectView::Show()
+{
+  if( mSurface )
+  {
+    Pepper::Internal::ShellClientPtr shellClient = reinterpret_cast< Pepper::Internal::ShellClient* >( pepper_object_get_user_data( reinterpret_cast< pepper_object_t* >( mSurface ), pepper_surface_get_role( mSurface ) ) );
+    if( shellClient )
+    {
+      shellClient->MapSurface();
+    }
+  }
+
+  Self().SetVisible( true );
+}
+
+void ObjectView::Hide()
+{
+  if( mSurface )
+  {
+    Pepper::Internal::ShellClientPtr shellClient = reinterpret_cast< Pepper::Internal::ShellClient* >( pepper_object_get_user_data( reinterpret_cast< pepper_object_t* >( mSurface ), pepper_surface_get_role( mSurface ) ) );
+    if( shellClient )
+    {
+      shellClient->UnmapSurface();
+    }
+  }
+
+  Self().SetVisible( false );
+}
+
 void ObjectView::SetSurface( pepper_surface_t* surface )
 {
   mSurface = surface;

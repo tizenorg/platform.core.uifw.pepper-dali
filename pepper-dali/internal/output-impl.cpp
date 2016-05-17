@@ -24,6 +24,8 @@
 // EXTERNAL INCLUDES
 #include <dali/integration-api/adaptors/adaptor.h>
 #include <dali/devel-api/adaptor-framework/render-surface.h>
+#include <dali/integration-api/adaptors/ecore-wl-render-surface.h>
+#include <dali/integration-api/adaptors/trigger-event-factory.h>
 #include <dali/integration-api/debug.h>
 
 namespace Dali
@@ -58,7 +60,7 @@ static const struct pepper_output_backend outputInterface =
   Output::OnStartRepaintLoop,
   Output::OnRepaint,
   Output::OnAttachSurface,
-  Output::OnFlushSurface
+  Output::OnFlushSurfaceDamage
 };
 
 } // unnamed namespace
@@ -77,7 +79,7 @@ Output::Output()
 : mSize(),
   mOutput( NULL ),
   mPrimaryPlane( NULL ),
-  mRepaintRequest( false )
+  mBufferAttached( false )
 {
 }
 
@@ -113,8 +115,16 @@ void Output::Initialize( Pepper::Compositor& compositor, Application application
 
   application.ResizeSignal().Connect( this, &Output::OnResize );
 
-  // Set the thread-synchronization interface on the render-surface
-  surface.SetThreadSynchronization( *this );
+  // Sets the render notification trigger to call when rendering is completed a frame
+  TriggerEventFactory triggerEventFactory;
+  TriggerEventInterface* renderNotification = triggerEventFactory.CreateTriggerEvent( MakeCallback( this, &Output::OnPostRender ),
+                                                                                      TriggerEventInterface::KEEP_ALIVE_AFTER_TRIGGER );
+
+  ECore::EcoreWlRenderSurface* renderSurface = dynamic_cast< ECore::EcoreWlRenderSurface* >( &surface );
+  if( renderSurface )
+  {
+    renderSurface->SetRenderNotification( renderNotification );
+  }
 
   DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::Initialize: success [width = %.2f height = %.2f]\n", mSize.width, mSize.height );
 }
@@ -199,20 +209,6 @@ void Output::OnStartRepaintLoop( void* data )
 
 void Output::OnRepaint( void* data, const pepper_list_t* planeList )
 {
-  Output* output = static_cast< Output* >( data );
-
-  DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::OnRepaint\n" );
-
-  output->mRepaintRequest = true;
-
-  // TODO: temp
-  if( !output->mRenderFinishTimer )
-  {
-    output->mRenderFinishTimer= Timer::New(1);
-    output->mRenderFinishTimer.TickSignal().Connect( output, &Output::OnRenderFinishTimerTick );
-  }
-
-  output->mRenderFinishTimer.Start();
 }
 
 void Output::OnAttachSurface( void* data, pepper_surface_t* surface, int* width, int* height )
@@ -248,14 +244,10 @@ void Output::OnAttachSurface( void* data, pepper_surface_t* surface, int* width,
     *height = 0;
   }
 
-  // TODO: temp
-  struct timespec ts;
-
-  pepper_compositor_get_time( static_cast< pepper_compositor_t* >( Pepper::GetImplementation( output->mCompositor ).GetCompositorHandle() ), &ts );
-  pepper_output_finish_frame( output->mOutput, &ts );
+  output->mBufferAttached = true;
 }
 
-void Output::OnFlushSurface( void* data, pepper_surface_t* surface, pepper_bool_t* keepBuffer )
+void Output::OnFlushSurfaceDamage( void* data, pepper_surface_t* surface, pepper_bool_t* keepBuffer )
 {
 }
 
@@ -301,42 +293,19 @@ void Output::OnObjectViewDeleted( Pepper::Object object, Pepper::ObjectView obje
   }
 }
 
-void Output::PostRenderComplete()
+void Output::OnPostRender()
 {
-  if( mRepaintRequest )
+  if( mBufferAttached )
   {
     struct timespec ts;
 
-    DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::PostRenderComplete" );
+    DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::OnPostRender" );
 
     pepper_compositor_get_time( static_cast< pepper_compositor_t* >( Pepper::GetImplementation( mCompositor ).GetCompositorHandle() ), &ts );
     pepper_output_finish_frame( mOutput, &ts );
 
-    mRepaintRequest = false;
+    mBufferAttached = false;
   }
-}
-
-void Output::PostRenderStarted()
-{
-  // Do nothing
-}
-
-void Output::PostRenderWaitForCompletion()
-{
-  // Do nothing
-}
-
-// TODO: temp
-bool Output::OnRenderFinishTimerTick()
-{
-  struct timespec ts;
-
-  DALI_LOG_INFO( gPepperOutputLogging, Debug::Verbose, "Output::OnRenderFinishTimerTick\n" );
-
-  pepper_compositor_get_time( static_cast< pepper_compositor_t* >( Pepper::GetImplementation( mCompositor ).GetCompositorHandle() ), &ts );
-  pepper_output_finish_frame( mOutput, &ts );
-
-  return false;
 }
 
 } // namespace Internal

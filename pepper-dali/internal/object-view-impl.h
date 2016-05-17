@@ -71,6 +71,16 @@ public:
   bool CancelTouchEvent();
 
   /**
+   * @copydoc Dali::Pepper::ObjectView::Show
+   */
+  void Show();
+
+  /**
+   * @copydoc Dali::Pepper::ObjectView::Hide
+   */
+  void Hide();
+
+  /**
    * Set pepper surface
    */
   void SetSurface( pepper_surface_t* surface );

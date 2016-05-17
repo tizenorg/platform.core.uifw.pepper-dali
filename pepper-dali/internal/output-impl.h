@@ -27,11 +27,7 @@
 #include <dali/public-api/common/vector-wrapper.h>
 #include <dali/public-api/object/base-object.h>
 #include <dali/public-api/signals/connection-tracker.h>
-#include <dali/integration-api/adaptors/thread-synchronization-interface.h>
 #include <pepper-output-backend.h>
-
-// TODO: temp
-#include <dali/public-api/adaptor-framework/timer.h>
 
 namespace Dali
 {
@@ -45,7 +41,7 @@ namespace Internal
 class Output;
 typedef IntrusivePtr<Output> OutputPtr;
 
-class Output : public BaseObject, public ConnectionTracker, public ThreadSynchronizationInterface
+class Output : public BaseObject, public ConnectionTracker
 {
 public:
 
@@ -62,7 +58,7 @@ public:
   static void OnStartRepaintLoop( void* data );
   static void OnRepaint( void* data, const pepper_list_t* planeList );
   static void OnAttachSurface( void* data, pepper_surface_t* surface, int* width, int* height );
-  static void OnFlushSurface( void* data, pepper_surface_t* surface, pepper_bool_t* keepBuffer );
+  static void OnFlushSurfaceDamage( void* data, pepper_surface_t* surface, pepper_bool_t* keepBuffer );
 
 public: //Signals
 
@@ -91,33 +87,10 @@ private:
   void OnObjectViewAdded( Pepper::Object object, Pepper::ObjectView objectView );
   void OnObjectViewDeleted( Pepper::Object object, Pepper::ObjectView objectView );
 
-private: // From ThreadSynchronizationInterface
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-  // Called by the Event Thread if post-rendering is required
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-
   /**
-   * @copydoc ThreadSynchronizationInterface::PostRenderComplete()
+   * Callback function that is called when render thread is completed a frame
    */
-  virtual void PostRenderComplete();
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-  //// Called by the Render Thread if post-rendering is required
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * @copydoc ThreadSynchronizationInterface::PostRenderStarted()
-   */
-  virtual void PostRenderStarted();
-
-  /**
-   * @copydoc ThreadSynchronizationInterface::PostRenderStarted()
-   */
-  virtual void PostRenderWaitForCompletion();
-
-  // TODO: temp
-  bool OnRenderFinishTimerTick();
+  void OnPostRender();
 
 private:
 
@@ -143,10 +116,7 @@ private: // Data
   Pepper::Output::OutputSignalType mObjectViewAddedSignal;
   Pepper::Output::OutputSignalType mObjectViewDeletedSignal;
 
-  bool mRepaintRequest;
-
-  // TODO: temp
-  Timer mRenderFinishTimer;
+  bool mBufferAttached;
 };
 
 } // namespace Internal

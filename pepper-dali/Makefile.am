@@ -16,7 +16,7 @@ libpepper_dali_la_LIBADD = @DALI_LIBS@ @WAYLAND_LIBS@ @PEPPER_LIBS@ @WAYLAND_TBM
 libpepper_dali_la_LDFLAGS = ${LDFLAGS}
 libpepper_dali_la_CXXFLAGS = \
     ${CFLAGS} \
-    $(DALICORE_CFLAGS) \
+    $(DALI_CFLAGS) \
     @EFL_CFLAGS@ \
     @WAYLAND_CFLAGS@ \
     @PEPPER_CFLAGS@ \
