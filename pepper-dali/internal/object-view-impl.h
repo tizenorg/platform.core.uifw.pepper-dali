@@ -81,6 +81,11 @@ public:
   void Hide();
 
   /**
+   * @copydoc Dali::Pepper::ObjectView::SetVisibilityState
+   */
+  void SetVisibilityState( Pepper::ObjectView::VisibilityState state );
+
+  /**
    * Set pepper surface
    */
   void SetSurface( pepper_surface_t* surface );

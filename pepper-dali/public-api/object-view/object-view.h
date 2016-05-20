@@ -48,6 +48,17 @@ class DALI_IMPORT_API ObjectView : public Toolkit::Control
 public:
 
   /**
+   * @brief Visibility state
+   * @since_tizen 3.0
+   */
+  enum VisibilityState
+  {
+    UNOBSCURED,           ///< ObjectView is unobscured @since_tizen 3.0
+    PARTIALLY_OBSCURED,   ///< ObjectView is partially obscured @since_tizen 3.0
+    FULLY_OBSCURED        ///< ObjectView is fully obscured @since_tizen 3.0
+  };
+
+  /**
    * @brief Create object view.
    *
    * @since_tizen 3.0
@@ -152,6 +163,15 @@ public:
    * @since_tizen 3.0
    */
   void Hide();
+
+  /**
+   * @brief Set visibility state of the client.
+   * The client will get window visibility change event if this function is called.
+   *
+   * @since_tizen 3.0
+   * @param[in] state The state of visibility.
+   */
+  void SetVisibilityState( VisibilityState state );
 
 public: // Not intended for application developers
 

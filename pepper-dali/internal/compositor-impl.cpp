@@ -18,6 +18,9 @@
 // CLASS HEADER
 #include <pepper-dali/internal/compositor-impl.h>
 
+// INTERNAL INCLUDES
+#include <pepper-dali/internal/extensions/tizen-policy.h>
+
 // EXTERNAL INCLUDES
 #include <dali/integration-api/debug.h>
 #include <wayland-server.h>
@@ -81,6 +84,8 @@ Compositor::Compositor()
 
 Compositor::~Compositor()
 {
+  Extension::TizenPolicyShutdown();
+
   if( mTbmServer )
   {
     wayland_tbm_server_deinit( mTbmServer );
@@ -137,10 +142,19 @@ void Compositor::Initialize( Application application, const std::string& name )
     return;
   }
 
+  if( !Extension::TizenPolicyInit( mCompositor ) )
+  {
+    DALI_LOG_INFO( gPepperCompositorLogging, Debug::General, "Compositor::Initialize: Fail to init extension.\n" );
+    pepper_compositor_destroy( mCompositor );
+    mCompositor = NULL;
+    return;
+  }
+
   mTbmServer = wayland_tbm_server_init( mDisplay, NULL, -1, 0 );
   if( !mTbmServer )
   {
     DALI_LOG_INFO( gPepperCompositorLogging, Debug::General, "Compositor::Initialize: wayland_tbm_server_init is failed.\n" );
+    Extension::TizenPolicyShutdown();
     pepper_compositor_destroy( mCompositor );
     mCompositor = NULL;
     return;
@@ -153,6 +167,7 @@ void Compositor::Initialize( Application application, const std::string& name )
     DALI_LOG_INFO( gPepperCompositorLogging, Debug::General, "Compositor::Initialize: Fail to create input.\n" );
     wayland_tbm_server_deinit( mTbmServer );
     mTbmServer = NULL;
+    Extension::TizenPolicyShutdown();
     pepper_compositor_destroy( mCompositor );
     mCompositor = NULL;
     return;
@@ -178,6 +193,7 @@ void Compositor::Initialize( Application application, const std::string& name )
     mFdHandler = NULL;
     wayland_tbm_server_deinit( mTbmServer );
     mTbmServer = NULL;
+    Extension::TizenPolicyShutdown();
     pepper_compositor_destroy( mCompositor );
     mCompositor = NULL;
     return;

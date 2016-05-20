@@ -12,5 +12,5 @@ internal_src_files = \
   $(internal_src_dir)/shell.cpp \
   $(internal_src_dir)/shell-impl.cpp \
   $(internal_src_dir)/shell-client.cpp \
-  $(internal_src_dir)/shell-client-impl.cpp
-
+  $(internal_src_dir)/shell-client-impl.cpp \
+  $(internal_src_dir)/extensions/tizen-policy.cpp
