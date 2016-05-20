@@ -20,6 +20,7 @@
 
 // INTERNAL INCLUDES
 #include <pepper-dali/internal/shell-client-impl.h>
+#include <pepper-dali/internal/extensions/tizen-policy.h>
 
 // EXTERNAL INCLUDES
 #include <dali/public-api/events/touch-event.h>
@@ -184,6 +185,34 @@ void ObjectView::Hide()
   }
 
   Self().SetVisible( false );
+}
+
+void ObjectView::SetVisibilityType( Pepper::ObjectView::VisibilityType type )
+{
+  Pepper::Internal::Extension::VisibilityType visibilityType;
+
+  switch( type )
+  {
+    case Pepper::ObjectView::UNOBSCURED:
+    {
+      visibilityType = Pepper::Internal::Extension::UNOBSCURED;
+      break;
+    }
+    case Pepper::ObjectView::PARTIALLY_OBSCURED:
+    {
+      visibilityType = Pepper::Internal::Extension::PARTIALLY_OBSCURED;
+      break;
+    }
+    case Pepper::ObjectView::FULLY_OBSCURED:
+    {
+      visibilityType = Pepper::Internal::Extension::FULLY_OBSCURED;
+      break;
+    }
+  }
+
+  Pepper::Internal::Extension::TizenPolicySetVisibility( mSurface, visibilityType );
+
+  DALI_LOG_INFO( gPepperObjectViewLogging, Debug::General, "ObjectView::SetVisibilityType: type = %d\n", type );
 }
 
 void ObjectView::SetSurface( pepper_surface_t* surface )

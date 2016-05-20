@@ -94,6 +94,11 @@ void ObjectView::Hide()
   Dali::Pepper::GetImplementation( *this ).Hide();
 }
 
+void ObjectView::SetVisibilityType( VisibilityType type )
+{
+  Dali::Pepper::GetImplementation( *this ).SetVisibilityType( type );
+}
+
 ObjectView::ObjectView( Internal::ObjectView& implementation )
 : Control( implementation )
 {

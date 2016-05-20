@@ -81,6 +81,11 @@ public:
   void Hide();
 
   /**
+   * @copydoc Dali::Pepper::ObjectView::SetVisibilityType
+   */
+  void SetVisibilityType( Pepper::ObjectView::VisibilityType type );
+
+  /**
    * Set pepper surface
    */
   void SetSurface( pepper_surface_t* surface );
