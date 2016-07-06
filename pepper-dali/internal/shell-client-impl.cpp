@@ -271,6 +271,11 @@ void ShellClient::GetSurface( wl_client* client, unsigned int id, wl_resource* s
   mSurface = static_cast< pepper_surface_t* >( wl_resource_get_user_data( surfaceResource ) );
 
   mSurfaceResource = wl_resource_create( client, &xdg_surface_interface, 1, id );
+  if( !mSurfaceResource )
+  {
+    DALI_LOG_INFO( gPepperShellClientLogging, Debug::General, "ShellClient::GetSurface: wl_resource_create is failed\n" );
+    return;
+  }
 
   mView = pepper_compositor_add_view( static_cast< pepper_compositor_t* >( Pepper::GetImplementation( mCompositor ).GetCompositorHandle() ) );
   if( !mView )
