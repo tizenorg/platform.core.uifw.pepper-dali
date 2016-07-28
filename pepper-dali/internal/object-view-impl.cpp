@@ -190,12 +190,12 @@ void ObjectView::Hide()
 void ObjectView::SetVisibilityState( Pepper::ObjectView::VisibilityState state )
 {
   Pepper::Internal::Extension::VisibilityState visibilityState;
+  visibilityState = Pepper::Internal::Extension::UNOBSCURED;
 
   switch( state )
   {
     case Pepper::ObjectView::UNOBSCURED:
     {
-      visibilityState = Pepper::Internal::Extension::UNOBSCURED;
       break;
     }
     case Pepper::ObjectView::PARTIALLY_OBSCURED:
